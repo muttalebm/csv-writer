@@ -5,7 +5,7 @@ import {strictEqual, throws} from 'assert'
 describe('ObjectCsvStringifier', () => {
     const records = [
         {FIELD_A: 'VALUE_A1', FIELD_B: 'VALUE_B1'},
-        {FIELD_A: 'VALUE_A2', FIELD_B: 'VALUE_B2', OTHERS: {FIELD_C: 'VALUE_C2'}}
+        {FIELD_A: 'VALUE_A2', FIELD_B: 'VALUE_B2', OTHERS: {FIELD_C: 'VALUE_C2'}},
     ]
 
     describe('When field delimiter is comma', generateTestCases(','))
@@ -66,6 +66,34 @@ describe('ObjectCsvStringifier', () => {
 
         it('quotes all data fields', () => {
             strictEqual(stringifier.stringifyRecords(records), '"VALUE_A1","VALUE_B1"\n"VALUE_A2","VALUE_B2"\n')
+        })
+    })
+
+    describe('When `nullRecordValue` flag is set', () => {
+        const stringifier = createObjectCsvStringifier({
+            header: [
+                {id: 'FIELD_A', title: 'TITLE_A'},
+                {id: 'FIELD_B', title: 'TITLE_B'}
+            ],
+            headerIdDelimiter: '/',
+            alwaysQuote: true,
+            nullRecordValue:'"NULL"'
+        })
+        const recordsWithNULL = [{FIELD_A: 'VALUE_A1', FIELD_B: 'VALUE_B1'},
+            {FIELD_A: 'VALUE_A2', FIELD_B: 'VALUE_B2'},
+            {FIELD_A: '', FIELD_B: 'VALUE_B3'},
+            {FIELD_A: null, FIELD_B: 'VALUE_B4'},
+            {FIELD_B: 'VALUE_B5'},
+            {FIELD_A: 'VALUE_A6',FIELD_B: undefined},
+            {FIELD_A: 'VALUE_A7',FIELD_B: ''},
+            {FIELD_A: 'VALUE_A8',FIELD_B: null},
+            {FIELD_A: 'VALUE_A9'},
+            {FIELD_A: null,FIELD_B:null},
+        ]
+
+
+        it('quotes all data fields', () => {
+            strictEqual(stringifier.stringifyRecords(recordsWithNULL), '"VALUE_A1","VALUE_B1"\n"VALUE_A2","VALUE_B2"\n"NULL","VALUE_B3"\n"NULL","VALUE_B4"\n"NULL","VALUE_B5"\n"VALUE_A6","NULL"\n"VALUE_A7","NULL"\n"VALUE_A8","NULL"\n"VALUE_A9","NULL"\n"NULL","NULL"\n')
         })
     })
 

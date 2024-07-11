@@ -4,7 +4,7 @@ const DEFAULT_FIELD_DELIMITER = ','
 const VALID_FIELD_DELIMITERS = [DEFAULT_FIELD_DELIMITER, ';']
 
 export abstract class FieldStringifier {
-    constructor(public readonly fieldDelimiter: string) {}
+    constructor(public readonly fieldDelimiter: string,public readonly nullRecordValue: string) {}
 
     abstract stringify(value?: Field): string
 
@@ -12,6 +12,9 @@ export abstract class FieldStringifier {
         return typeof value === 'undefined' || value === null || value === ''
     }
 
+    protected getNullRecordValue(): string {
+       return this.nullRecordValue;
+    }
     protected quoteField(field: string): string {
         return `"${field.replace(/"/g, '""')}"`
     }
@@ -19,7 +22,7 @@ export abstract class FieldStringifier {
 
 class DefaultFieldStringifier extends FieldStringifier {
     stringify(value?: Field): string {
-        if (this.isEmpty(value)) return ''
+        if (this.isEmpty(value)) return this.getNullRecordValue()
         const str = String(value)
         return this.needsQuote(str) ? this.quoteField(str) : str
     }
@@ -31,13 +34,13 @@ class DefaultFieldStringifier extends FieldStringifier {
 
 class ForceQuoteFieldStringifier extends FieldStringifier {
     stringify(value?: Field): string {
-        return this.isEmpty(value) ? '' : this.quoteField(String(value))
+        return this.isEmpty(value) ? this.getNullRecordValue() : this.quoteField(String(value))
     }
 }
 
-export function createFieldStringifier(fieldDelimiter: string = DEFAULT_FIELD_DELIMITER, alwaysQuote = false) {
+export function createFieldStringifier(fieldDelimiter: string = DEFAULT_FIELD_DELIMITER, alwaysQuote = false, nullRecordValue = '') {
     _validateFieldDelimiter(fieldDelimiter)
-    return alwaysQuote ? new ForceQuoteFieldStringifier(fieldDelimiter) : new DefaultFieldStringifier(fieldDelimiter)
+    return alwaysQuote ? new ForceQuoteFieldStringifier(fieldDelimiter,nullRecordValue) : new DefaultFieldStringifier(fieldDelimiter,nullRecordValue)
 }
 
 function _validateFieldDelimiter(delimiter: string): void {

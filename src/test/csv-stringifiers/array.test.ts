@@ -60,6 +60,27 @@ describe('ArrayCsvStringifier', () => {
         })
     })
 
+    describe('When `nullRecordValue` is set', () => {
+        const stringifier = createArrayCsvStringifier({
+            header: ['TITLE_A', 'TITLE_B'],
+            alwaysQuote: true,
+            nullRecordValue: '"NULL"'
+        })
+        const recordsWithNull = [
+            ['VALUE_A1', 'VALUE_B1'],
+            ['VALUE_A2', 'VALUE_B2'],
+            [undefined,'VALUE_B3'],
+            [undefined,undefined],
+            ['','VALUE_B5'],
+            ['',''],
+            [null,null],
+        ]
+        it('Replaces empty records with "NULL"', () => {
+            strictEqual(stringifier.stringifyRecords(recordsWithNull),
+                '"VALUE_A1","VALUE_B1"\n"VALUE_A2","VALUE_B2"\n"NULL","VALUE_B3"\n"NULL","NULL"\n"NULL","VALUE_B5"\n"NULL","NULL"\n"NULL","NULL"\n')
+        })
+    })
+
     function generateTestCases(fieldDelimiter: string) {
         const delim = resolveDelimiterChar(fieldDelimiter)
         return () => {
